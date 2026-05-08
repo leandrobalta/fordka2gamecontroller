@@ -1,4 +1,4 @@
-#!/Users/leandro/git/fordka2gamecontroller/venv/bin/python3
+#!/home/kali/git/fordka2gamecontroller/venv/bin/python3
 import sys
 from can.viewer import main
 if __name__ == '__main__':
