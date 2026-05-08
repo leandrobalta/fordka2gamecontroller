@@ -20,7 +20,7 @@ class CarController:
 		}
 
 def CANThread(car: CarController):
-	with can.Bus(interface='fordka', channel=0, bitrate=500000) as bus:
+	with can.ThreadSafeBus(interface='socketcan', channel='fordka', bitrate=500000) as bus:
 		for msg in bus:
 			msg_handle(car, msg)	
 
