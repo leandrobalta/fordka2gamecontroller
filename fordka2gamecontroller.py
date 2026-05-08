@@ -21,8 +21,11 @@ class CarController:
 
 def CANThread(car: CarController):
 	# MACOS:                       or 'serial'
-	#with can.ThreadSafeBus(interface='slcan', channel='/dev/cu.xxxx', tty_baudrate=115200, bitrate=500000) as bus:
-	with can.ThreadSafeBus(channel='fordka', interface='socketcan') as bus:
+	#with can.ThreadSafeBus(channel='fordka', interface='socketcan') as bus:
+	with can.interface.Bus(interface='slcan', 
+								channel='/dev/cu.usbserial-5B060119651', 
+								tty_baudrate=115200, 
+								bitrate=500000) as bus:
 		for msg in bus:
 			msg_handle(car, msg)	
 
@@ -36,9 +39,9 @@ def msg_handle(car: CarController, msg):
 	# meio pra direita => menor ou igual a 7E
 	# meio pra esquerda => maior ou igual a 82
 	if msg.arbitration_id == 0x07e:
-		print(f"steering data: [{msg.data}]")
+		#print(f"steering data: [{msg.data}]")
 		steer=msg.data[0]
-		print(f"steer: [{steer:02x}]")
+		#print(f"steer: [{steer:02x}]")
 		#print(f"{steer:02x}")
 		if steer >= 0x82:
 			car.steering=-1
@@ -53,7 +56,7 @@ def msg_handle(car: CarController, msg):
 	# FREIO DESATIVADO => 10 C0
 	# FREIO ATIVADO => 20 C0
 	if msg.arbitration_id == 0x165:
-		print(f"brake data: [{msg.data}]")
+		#print(f"brake data: [{msg.data}]")
 		if msg.data[0] == 0x20:
 			car.brake=1
 		else:
@@ -64,7 +67,7 @@ def msg_handle(car: CarController, msg):
 	# ACELERADOR ACIONADO    => 72 7F FF 00 00 1A XX 00
 	# ACELERADOR DESACIONADO => 72 7F FF 00 00 19 XX 00
 	if msg.arbitration_id == 0x167:
-		print(f"throttle data [{msg.data}]")
+		#print(f"throttle data [{msg.data}]")
 		if msg.data[5] == 0x1a:
 			car.throttle = 1
 		else:
@@ -116,7 +119,9 @@ while True:
 	else:
 		keyboard.release(Key.right)
 	
-	print(f"throttle: [{state["throttle"]}] | brake: [{state["brake"]}] | steering: [{state["steering"]}]")
+	#print(f"throttle: [{state["throttle"]}] | brake: [{state["brake"]}] | steering: [{state["steering"]}]")
+	# make the same print above but without f statement
+	print("throttle: [{}] | brake: [{}] | steering: [{}]".format(state["throttle"], state["brake"], state["steering"]))
 	
 
 
