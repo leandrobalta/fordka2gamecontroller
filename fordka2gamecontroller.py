@@ -38,14 +38,20 @@ def msg_handle(car: CarController, msg):
 	# tudo pra esquerda => 93
 	# meio pra direita => menor ou igual a 7E
 	# meio pra esquerda => maior ou igual a 82
+
+	# update dia 08/05/2026:
+	# reto => 7C
+	# direita => menor ou igual a 7A
+	# esquerda => maior ou igual a 7E
+
 	if msg.arbitration_id == 0x07e:
 		#print(f"steering data: [{msg.data}]")
 		steer=msg.data[0]
 		#print(f"steer: [{steer:02x}]")
 		#print(f"{steer:02x}")
-		if steer >= 0x82:
+		if steer >= 0x7d:
 			car.steering=-1
-		elif steer <= 0x7E:
+		elif steer <= 0x7b:
 			car.steering=1
 		else:
 			car.steering=0
@@ -55,23 +61,39 @@ def msg_handle(car: CarController, msg):
 	# CAN ID => 165
 	# FREIO DESATIVADO => 10 C0
 	# FREIO ATIVADO => 20 C0
+ 
+	#update dia 08/05/2026:
+	# FREIO E ACELERADOR MESMO ID => 165
+	# PEDALS OFF => 10 C0
+	# FREIO ATIVADO => 20 C0
+	# ACELERADOR ATIVADO => 50 C0
+	# FREIO E ACELERADOR ATIVADOS => 60 C0
 	if msg.arbitration_id == 0x165:
 		#print(f"brake data: [{msg.data}]")
+  
 		if msg.data[0] == 0x20:
-			car.brake=1
+			car.brake = 1
 		else:
-			car.brake=0
+			car.brake = 0
+
+		if msg.data[0] == 0x50:
+			car.throttle = 1
+		elif msg.data[0] == 0x60:
+			car.throttle = 1
+			car.brake = 1
+		else:
+			car.throttle = 0
 
 	# ACELERADOR FORD KA
 	# CAN ID => 167 
 	# ACELERADOR ACIONADO    => 72 7F FF 00 00 1A XX 00
 	# ACELERADOR DESACIONADO => 72 7F FF 00 00 19 XX 00
-	if msg.arbitration_id == 0x167:
-		#print(f"throttle data [{msg.data}]")
-		if msg.data[5] == 0x1a:
-			car.throttle = 1
-		else:
-			car.throttle = 0
+	# if msg.arbitration_id == 0x167:
+	# 	#print(f"throttle data [{msg.data}]")
+	# 	if msg.data[5] == 0x1a:
+	# 		car.throttle = 1
+	# 	else:
+	# 		car.throttle = 0
 
 
 keyboard = Controller()
@@ -97,7 +119,7 @@ car = CarController()
 can_thread = Thread(target=CANThread, args=(car,))
 can_thread.daemon = True
 can_thread.start()
-
+ 
 # Now poll for keys
 while True:
 	time.sleep(1 / 20)
